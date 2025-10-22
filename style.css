@@ -1,0 +1,340 @@
+/* style.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eef2f7; /* 浅蓝色背景 */
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+.container {
+    max-width: 900px;
+    width: 100%;
+    margin: 20px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px; /* 更圆润的边角 */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* 更明显的阴影 */
+}
+h1, h2 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+h3 {
+    color: #34495e;
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+.form-group {
+    margin-bottom: 18px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="file"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+    width: calc(100% - 24px); /* 调整宽度 */
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px; /* 更圆润的输入框 */
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.form-group input[type="text"]:focus,
+.form-group input[type="password"]:focus,
+.form-group input[type="file"]:focus,
+.form-group input[type="number"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-group input[type="submit"], .button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.form-group input[type="submit"]:hover, .button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.button.logout {
+    background-color: #dc3545;
+}
+.button.logout:hover {
+    background-color: #c82333;
+}
+.button.secondary {
+    background-color: #6c757d;
+}
+.button.secondary:hover {
+    background-color: #5a6268;
+}
+.button.warning {
+    background-color: #ffc107;
+    color: #333;
+}
+.button.warning:hover {
+    background-color: #e0a800;
+}
+.button.danger {
+    background-color: #dc3545;
+}
+.button.danger:hover {
+    background-color: #c82333;
+}
+.button.success {
+    background-color: #28a745;
+}
+.button.success:hover {
+    background-color: #218838;
+}
+
+.alert {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    animation: fadeIn 0.5s ease-out;
+}
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.alert.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+.alert.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+.text-center {
+    text-align: center;
+}
+.section {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    border: 1px solid #eee;
+    padding: 10px;
+    text-align: left;
+    vertical-align: middle;
+}
+th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+    color: #555;
+}
+td button, td .button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 0.9em;
+}
+td button:hover, td .button:hover {
+    transform: translateY(-1px);
+}
+td .status-pending { color: #ffc107; font-weight: bold; } /* 黄色 */
+td .status-printing { color: #17a2b8; font-weight: bold; } /* 蓝色 */
+td .status-completed { color: #28a745; font-weight: bold; } /* 绿色 */
+td .status-failed { color: #dc3545; font-weight: bold; } /* 红色 */
+td .status-active { color: #28a745; font-weight: bold; }
+td .status-inactive { color: #6c757d; font-weight: bold; }
+td .status-banned { color: #dc3545; font-weight: bold; }
+td .status-not-banned { color: #28a745; font-weight: bold; }
+
+/* Admin Navigation */
+.admin-nav {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+.admin-nav a {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 0 5px;
+    background-color: #343a40; /* 深色背景 */
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.admin-nav a:hover {
+    background-color: #495057;
+}
+.admin-nav a.active {
+    background-color: #007bff;
+}
+
+
+/* Modal (弹窗) 样式 */
+.modal {
+    display: none; /* 默认隐藏 */
+    position: fixed; /* 固定定位 */
+    z-index: 1000; /* 放置在最上层 */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* 如果内容过多可滚动 */
+    background-color: rgba(0,0,0,0.6); /* 半透明黑色背景 */
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 32px; /* 增大关闭按钮 */
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    line-height: 1; /* 调整行高 */
+}
+.close-button:hover,
+.close-button:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-footer {
+    text-align: right;
+    margin-top: 25px;
+}
+.modal-footer button {
+    margin-left: 10px;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    .container {
+        padding: 15px;
+        margin: 10px auto;
+    }
+    h1, h2 {
+        font-size: 1.8em;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="password"],
+    .form-group input[type="file"],
+    .form-group input[type="number"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        font-size: 15px;
+    }
+    .form-group input[type="submit"], .button {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    th, td {
+        min-width: 100px; /* 确保小屏幕下可滚动 */
+        font-size: 0.9em;
+        padding: 8px;
+    }
+    td button, td .button {
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+    .admin-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .admin-nav a {
+        margin: 5px 0;
+    }
+}
