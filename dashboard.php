@@ -14,7 +14,7 @@ $message = ''; // 用于显示各种操作消息
 
 // 获取用户已上传的文件
 $uploaded_files = [];
-$sql = "SELECT id, original_filename, upload_time, print_status, page_count, cost FROM " . TABLE_UPLOADED_FILES . " WHERE user_id = ? ORDER BY upload_time DESC";
+$sql = "SELECT id, original_filename, upload_time, print_status, page_count, cost, error_message FROM " . TABLE_UPLOADED_FILES . " WHERE user_id = ? ORDER BY upload_time DESC";
 if ($stmt = $mysqli->prepare($sql)) {
     $stmt->bind_param("i", $user_id);
     if ($stmt->execute()) {
@@ -87,15 +87,20 @@ $mysqli->close();
                         <input type="file" name="file_to_upload" id="file_to_upload" required>
                     </div>
                     <div class="form-group">
-                        <label for="printer_name_select">选择打印机:</label>
-                        <select name="printer_name" id="printer_name_select" required>
-                            <option value="">加载中...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <input type="submit" value="上传文件">
                     </div>
                 </form>
+            </div>
+
+            <!-- 新增：用于控制打印队列显示的打印机选择器 -->
+            <div class="section">
+                <h3>选择打印机查看队列</h3>
+                <div class="form-group">
+                    <label for="queue_printer_select">选择打印机:</label>
+                    <select name="queue_printer_select" id="queue_printer_select" required>
+                        <option value="">加载中...</option>
+                    </select>
+                </div>
             </div>
 
             <!-- 打印队列信息 -->
@@ -131,7 +136,12 @@ $mysqli->close();
                                 <td><?php echo $file['page_count']; ?></td>
                                 <td>¥<?php echo number_format($file['cost'], 2); ?></td>
                                 <td><?php echo $file['upload_time']; ?></td>
-                                <td><span class="status-<?php echo $file['print_status']; ?>"><?php echo ucfirst($file['print_status']); ?></span></td>
+                                <td>
+                                    <span class="status-<?php echo $file['print_status']; ?>"><?php echo ucfirst($file['print_status']); ?></span>
+                                    <?php if (!empty($file['error_message'])): ?>
+                                        <br><small style="color:red;" title="<?php echo htmlspecialchars($file['error_message']); ?>"> (错误详情)</small>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if (SERVICE_STATUS == 'on' && ($file['print_status'] == 'pending' || $file['print_status'] == 'failed')): ?>
                                     <button class="print-button" data-file-id="<?php echo $file['id']; ?>" data-page-count="<?php echo $file['page_count']; ?>" data-cost="<?php echo $file['cost']; ?>" data-filename="<?php echo htmlspecialchars($file['original_filename']); ?>">打印</button>
@@ -157,6 +167,12 @@ $mysqli->close();
             <p>您即将打印文件: <strong id="modal-filename"></strong></p>
             <p>预估页数: <strong id="modal-page-count"></strong> 页</p>
             <p>费用: <strong id="modal-cost"></strong> 元 (每页 <?php echo number_format(COST_PER_PAGE, 2); ?> 元)</p>
+            <div class="form-group">
+                <label for="modal_printer_name_select">选择打印机:</label>
+                <select name="modal_printer_name" id="modal_printer_name_select" required>
+                    <option value="">加载中...</option>
+                </select>
+            </div>
             <p class="alert info">请确认您已支付费用。</p>
             <div class="modal-footer">
                 <button class="button secondary" id="cancelPrint">取消</button>
@@ -167,44 +183,67 @@ $mysqli->close();
 
     <script>
         let selectedFileId = null;
-        let selectedPrinterName = '';
+        let selectedPrinterName = ''; // 这个变量将由 queue_printer_select 控制
         let currentPageCount = 0;
 
         document.addEventListener('DOMContentLoaded', function() {
-            const printerSelect = document.getElementById('printer_name_select');
+            // 新增：用于控制队列显示的打印机选择器
+            const queuePrinterSelect = document.getElementById('queue_printer_select');
+            // 模态框内部的打印机选择器
+            const modalPrinterSelect = document.getElementById('modal_printer_name_select');
+
             const printQueueStatus = document.getElementById('print_queue_status');
             const selectedPrinterQueueName = document.getElementById('selected_printer_queue_name');
 
             // --- 动态加载打印机列表 (只加载管理员激活的打印机) ---
             async function loadPrinters() {
-                if (printerSelect) { // 只有当服务开启时才会有打印机选择框
-                    printerSelect.innerHTML = '<option value="">加载中...</option>';
-                    try {
-                        const response = await fetch('get_printers.php');
-                        const printers = await response.json();
-                        printerSelect.innerHTML = ''; // 清空加载中选项
-                        if (printers.error) {
-                            printerSelect.innerHTML = '<option value="">加载失败</option>';
-                            console.error('获取打印机失败:', printers.error);
-                            return;
-                        }
-                        if (printers.length === 0) {
-                            printerSelect.innerHTML = '<option value="">无可用打印机</option>';
-                        } else {
-                            printers.forEach(printer => {
-                                const option = document.createElement('option');
-                                option.value = printer;
-                                option.textContent = printer;
-                                printerSelect.appendChild(option);
-                            });
-                            selectedPrinterName = printerSelect.value; // 默认选中第一个
+                // 确保服务开启时才加载打印机
+                if (SERVICE_STATUS !== 'on') {
+                    if (queuePrinterSelect) queuePrinterSelect.innerHTML = '<option value="">服务已暂停</option>';
+                    if (modalPrinterSelect) modalPrinterSelect.innerHTML = '<option value="">服务已暂停</option>';
+                    return;
+                }
+
+                if (queuePrinterSelect) queuePrinterSelect.innerHTML = '<option value="">加载中...</option>';
+                if (modalPrinterSelect) modalPrinterSelect.innerHTML = '<option value="">加载中...</option>';
+
+                try {
+                    const response = await fetch('get_printers.php');
+                    const printers = await response.json();
+                    
+                    if (printers.error) {
+                        const errorMessage = `<option value="">加载失败: ${printers.error}</option>`;
+                        if (queuePrinterSelect) queuePrinterSelect.innerHTML = errorMessage;
+                        if (modalPrinterSelect) modalPrinterSelect.innerHTML = errorMessage;
+                        console.error('获取打印机失败:', printers.error);
+                        return;
+                    }
+
+                    if (printers.length === 0) {
+                        const noPrinterMessage = '<option value="">无可用打印机</option>';
+                        if (queuePrinterSelect) queuePrinterSelect.innerHTML = noPrinterMessage;
+                        if (modalPrinterSelect) modalPrinterSelect.innerHTML = noPrinterMessage;
+                    } else {
+                        let optionsHtml = '';
+                        printers.forEach(printer => {
+                            optionsHtml += `<option value="${printer}">${printer}</option>`;
+                        });
+
+                        if (queuePrinterSelect) {
+                            queuePrinterSelect.innerHTML = optionsHtml;
+                            selectedPrinterName = queuePrinterSelect.value; // 默认选中第一个
                             selectedPrinterQueueName.textContent = selectedPrinterName;
                             loadPrintQueue(); // 加载默认打印机的队列
                         }
-                    } catch (error) {
-                        printerSelect.innerHTML = '<option value="">加载失败</option>';
-                        console.error('获取打印机列表时发生错误:', error);
+                        if (modalPrinterSelect) {
+                            modalPrinterSelect.innerHTML = optionsHtml;
+                        }
                     }
+                } catch (error) {
+                    const errorMessage = '<option value="">加载失败</option>';
+                    if (queuePrinterSelect) queuePrinterSelect.innerHTML = errorMessage;
+                    if (modalPrinterSelect) modalPrinterSelect.innerHTML = errorMessage;
+                    console.error('获取打印机列表时发生错误:', error);
                 }
             }
 
@@ -222,6 +261,11 @@ $mysqli->close();
                     if (queue.error) {
                         if (printQueueStatus) printQueueStatus.innerHTML = `<p class="alert error">获取打印队列失败: ${queue.error}</p>`;
                         console.error('获取打印队列失败:', queue.error);
+                        // 打印 PowerShell 的原始输出进行调试
+                        if (queue.powershell_raw_output) {
+                            console.error('PowerShell原始输出:', queue.powershell_raw_output);
+                            if (printQueueStatus) printQueueStatus.innerHTML += `<p class="alert error">PowerShell原始输出: <pre>${queue.powershell_raw_output}</pre></p>`;
+                        }
                         return;
                     }
 
@@ -241,9 +285,9 @@ $mysqli->close();
                 }
             }
 
-            // --- 打印机选择变化事件 ---
-            if (printerSelect) {
-                printerSelect.addEventListener('change', function() {
+            // --- 打印机选择变化事件 (新的队列选择器) ---
+            if (queuePrinterSelect) {
+                queuePrinterSelect.addEventListener('change', function() {
                     selectedPrinterName = this.value;
                     selectedPrinterQueueName.textContent = selectedPrinterName;
                     loadPrintQueue();
@@ -272,6 +316,12 @@ $mysqli->close();
                         modalPageCount.textContent = currentPageCount;
                         modalCost.textContent = cost.toFixed(2); // 格式化为两位小数
 
+                        // 模态框打开时，确保模态框内的打印机选择器也加载了打印机
+                        // 并且默认选中当前队列选择器选中的打印机
+                        if (modalPrinterSelect && queuePrinterSelect && queuePrinterSelect.value) {
+                            modalPrinterSelect.value = queuePrinterSelect.value;
+                        }
+                        
                         paymentModal.style.display = 'flex'; // 显示模态框
                     });
                 });
@@ -284,17 +334,22 @@ $mysqli->close();
                 });
 
                 confirmPaymentButton.addEventListener('click', async () => {
+                    const printerToPrint = modalPrinterSelect.value; // 从模态框中的选择器获取
+                    if (!printerToPrint) {
+                        alert('请选择一个打印机。');
+                        return;
+                    }
                     paymentModal.style.display = 'none'; // 隐藏模态框
 
-                    if (!selectedFileId || !selectedPrinterName) {
-                        alert('请选择文件和打印机。');
+                    if (!selectedFileId) {
+                        alert('请选择文件。');
                         return;
                     }
 
                     // 发送打印请求到 print_file.php
                     const formData = new FormData();
                     formData.append('file_id', selectedFileId);
-                    formData.append('printer_name', selectedPrinterName);
+                    formData.append('printer_name', printerToPrint); // 使用模态框中选择的打印机
 
                     try {
                         const response = await fetch('print_file.php', {
@@ -320,14 +375,9 @@ $mysqli->close();
             }
 
             // --- 页面初始化加载 ---
-            if (SERVICE_STATUS === 'on') { // 只有服务开启时才加载打印机和队列
-                loadPrinters();
-                // 每隔 5 秒刷新一次打印队列
-                setInterval(loadPrintQueue, 5000);
-            } else {
-                if (printerSelect) printerSelect.innerHTML = '<option value="">服务已暂停</option>';
-                if (printQueueStatus) printQueueStatus.innerHTML = '<p class="alert info">打印服务目前已暂停。</p>';
-            }
+            loadPrinters(); // 总是加载打印机，服务状态判断在 loadPrinters 内部处理
+            // 每隔 5 秒刷新一次打印队列
+            setInterval(loadPrintQueue, 5000);
         });
 
         // 从 PHP 获取服务状态

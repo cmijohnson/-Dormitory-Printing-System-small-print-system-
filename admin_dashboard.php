@@ -33,10 +33,11 @@ $mysqli->close();
         <p class="text-center">欢迎, <?php echo $admin_username; ?>! 您拥有系统管理权限。</p>
 
         <div class="admin-nav">
-            <a href="admin_dashboard.php" class="active">总览</a>
-            <a href="admin_users.php">用户管理</a>
-            <a href="admin_printers.php">打印机管理</a>
-            <a href="admin_settings.php">系统设置</a>
+            <a href="admin_dashboard.php" <?php if(basename($_SERVER['PHP_SELF']) == 'admin_dashboard.php') echo 'class="active"'; ?>>总览</a>
+            <a href="admin_users.php" <?php if(basename($_SERVER['PHP_SELF']) == 'admin_users.php') echo 'class="active"'; ?>>用户管理</a>
+            <a href="admin_printers.php" <?php if(basename($_SERVER['PHP_SELF']) == 'admin_printers.php') echo 'class="active"'; ?>>打印机管理</a>
+            <a href="admin_print_jobs.php" <?php if(basename($_SERVER['PHP_SELF']) == 'admin_print_jobs.php') echo 'class="active"'; ?>>打印记录</a>
+            <a href="admin_settings.php" <?php if(basename($_SERVER['PHP_SELF']) == 'admin_settings.php') echo 'class="active"'; ?>>系统设置</a>
             <a href="dashboard.php" class="button secondary">返回用户面板</a>
             <a href="logout.php" class="button logout">退出登录</a>
         </div>

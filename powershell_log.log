@@ -1,0 +1,6 @@
+[2025-10-23 15:00:25] [PowerShell] [INFO] PowerShell script started. Action: print, Printer: , File: 
+[2025-10-23 15:00:25] [PowerShell] [ERROR] Invalid Action parameter: print
+[2025-10-23 15:01:12] [PowerShell] [INFO] PowerShell script started. Action: 'GetPrintQueue', Printer: '导出为WPS, File: PDF'
+[2025-10-23 15:01:12] [PowerShell] [ERROR] Invalid Action parameter: 'GetPrintQueue'
+[2025-10-23 15:01:14] [PowerShell] [INFO] PowerShell script started. Action: 'GetPrintQueue', Printer: '导出为WPS, File: PDF'
+[2025-10-23 15:01:14] [PowerShell] [ERROR] Invalid Action parameter: 'GetPrintQueue'

@@ -187,10 +187,13 @@ td button, td .button {
 td button:hover, td .button:hover {
     transform: translateY(-1px);
 }
+/* 打印状态颜色 (简化版) */
 td .status-pending { color: #ffc107; font-weight: bold; } /* 黄色 */
 td .status-printing { color: #17a2b8; font-weight: bold; } /* 蓝色 */
 td .status-completed { color: #28a745; font-weight: bold; } /* 绿色 */
 td .status-failed { color: #dc3545; font-weight: bold; } /* 红色 */
+
+/* 其他状态 */
 td .status-active { color: #28a745; font-weight: bold; }
 td .status-inactive { color: #6c757d; font-weight: bold; }
 td .status-banned { color: #dc3545; font-weight: bold; }

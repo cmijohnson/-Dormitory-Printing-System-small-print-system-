@@ -11,14 +11,26 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 header('Content-Type: application/json');
 
 $printers_list = [];
+// 从数据库获取管理员已激活的打印机列表
 $sql = "SELECT printer_name FROM " . TABLE_PRINTERS . " WHERE is_active = 1 ORDER BY printer_name ASC";
-if ($result = $mysqli->query($sql)) {
-    while ($row = $result->fetch_assoc()) {
-        $printers_list[] = $row['printer_name'];
+if ($stmt = $mysqli->prepare($sql)) { // 使用预处理语句，更安全
+    if ($stmt->execute()) {
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $printers_list[] = $row['printer_name'];
+        }
+        $result->free();
+    } else {
+        // 捕获执行错误
+        echo json_encode(['error' => '数据库查询执行失败: ' . $stmt->error]);
+        $stmt->close();
+        $mysqli->close();
+        exit;
     }
-    $result->free();
+    $stmt->close();
 } else {
-    echo json_encode(['error' => '无法从数据库获取打印机列表。']);
+    // 捕获准备错误
+    echo json_encode(['error' => '数据库查询准备失败: ' . $mysqli->error]);
     $mysqli->close();
     exit;
 }
